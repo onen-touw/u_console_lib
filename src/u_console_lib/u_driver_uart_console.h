@@ -32,6 +32,7 @@ namespace ufo
         const auto& opt_list = block.get_opt_list();
 
         std::string mode;
+        size_t uarti = 0;
 
         if (opt_list.bind(&mode, "i,info"))
         {
@@ -80,8 +81,23 @@ namespace ufo
             block << '\n';
             return;
         }
-
-        if (opt_list.find("h,help"))
+        // temp
+        else if (opt_list.bind(&uarti, "w,write"))
+        {
+            ufo::u_uart_t drv(ufo::u_uart_t::uart_port_t::uart1);
+            block << "write to XY3606B: 01 06 00 03 00 01 B8 44\n";
+            uint8_t data[] = {0x01, 0x06, 0x00, 0x12, 0x00, 0x01, 0xE8, 0x0F};
+            // uint8_t data[] = {0x01, 0x06, 0x00, 0x02, 0x00, 0x01, 0xE9, 0xCA};
+            
+            block << drv.write(data, sizeof(data)) << '\n';
+            if (drv.available())
+            {
+                block << drv.read() << " " << '\n';
+            }
+            
+            drv.read();
+        }
+        else if (opt_list.find("h,help"))
         {
             block << "Usage: ";
             block << opt_list.get_prog_name() << " [--<option(s)>]\n";
